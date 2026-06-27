@@ -11,4 +11,16 @@ public class AppDbContext : DbContext
     }
 
     public DbSet<Empresa> Empresas => Set<Empresa>();
+    public DbSet<Usuario> Usuarios => Set<Usuario>();
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        base.OnModelCreating(modelBuilder);
+
+        modelBuilder.Entity<Usuario>()
+            .HasOne(u => u.Empresa)
+            .WithMany(e => e.Usuarios)
+            .HasForeignKey(u => u.EmpresaId)
+            .OnDelete(DeleteBehavior.Restrict);
+    }
 }

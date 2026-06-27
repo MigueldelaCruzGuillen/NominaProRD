@@ -1,20 +1,12 @@
-using NominaPro.Domain.Common;
+namespace NominaPro.Application.DTOs;
 
-namespace NominaPro.Domain.Entities;
-
-public class Empresa : BaseEntity
+public class EmpresaDto
 {
+    public Guid Id { get; set; }
     public string Nombre { get; set; } = string.Empty;
-
     public string Rnc { get; set; } = string.Empty;
-
     public string Direccion { get; set; } = string.Empty;
-
     public string Telefono { get; set; } = string.Empty;
-
     public string Correo { get; set; } = string.Empty;
-
-    public bool Activa { get; set; } = true;
-
-    public ICollection<Usuario> Usuarios { get; set; } = new List<Usuario>();
+    public bool Activa { get; set; }
 }
