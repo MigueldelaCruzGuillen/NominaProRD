@@ -1,0 +1,7 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/NominaPro.API/NominaPro.API.csproj" />
+    <Project Path="src/NominaPro.Application/NominaPro.Application.csproj" />
+    <Project Path="src/NominaPro.Domain/NominaPro.Domain.csproj" />
+  </Folder>
+</Solution>

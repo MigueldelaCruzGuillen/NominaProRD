@@ -1,0 +1,11 @@
+C:\Users\Usuario\Documents\NominaProRD\src\NominaPro.Domain\bin\Debug\net10.0\NominaPro.Domain.deps.json
+C:\Users\Usuario\Documents\NominaProRD\src\NominaPro.Domain\bin\Debug\net10.0\NominaPro.Domain.dll
+C:\Users\Usuario\Documents\NominaProRD\src\NominaPro.Domain\bin\Debug\net10.0\NominaPro.Domain.pdb
+C:\Users\Usuario\Documents\NominaProRD\src\NominaPro.Domain\obj\Debug\net10.0\NominaPro.Domain.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Usuario\Documents\NominaProRD\src\NominaPro.Domain\obj\Debug\net10.0\NominaPro.Domain.AssemblyInfoInputs.cache
+C:\Users\Usuario\Documents\NominaProRD\src\NominaPro.Domain\obj\Debug\net10.0\NominaPro.Domain.AssemblyInfo.cs
+C:\Users\Usuario\Documents\NominaProRD\src\NominaPro.Domain\obj\Debug\net10.0\NominaPro.Domain.csproj.CoreCompileInputs.cache
+C:\Users\Usuario\Documents\NominaProRD\src\NominaPro.Domain\obj\Debug\net10.0\NominaPro.Domain.dll
+C:\Users\Usuario\Documents\NominaProRD\src\NominaPro.Domain\obj\Debug\net10.0\refint\NominaPro.Domain.dll
+C:\Users\Usuario\Documents\NominaProRD\src\NominaPro.Domain\obj\Debug\net10.0\NominaPro.Domain.pdb
+C:\Users\Usuario\Documents\NominaProRD\src\NominaPro.Domain\obj\Debug\net10.0\ref\NominaPro.Domain.dll
