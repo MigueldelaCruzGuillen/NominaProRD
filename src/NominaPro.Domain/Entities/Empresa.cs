@@ -17,4 +17,5 @@ public class Empresa : BaseEntity
     public bool Activa { get; set; } = true;
 
     public ICollection<Usuario> Usuarios { get; set; } = new List<Usuario>();
+    public ICollection<Departamento> Departamentos { get; set; } = new List<Departamento>();
 }

@@ -5,29 +5,31 @@ obj/
 # Visual Studio
 .vs/
 
-# Visual Studio Code
+# VS Code
 .vscode/
 
 # Rider
 .idea/
 
-# Logs
-*.log
-
 # User files
 *.user
 *.suo
 
-# OS
-.DS_Store
-Thumbs.db
+# Logs
+*.log
 
 # Environment
 .env
-.env.*
 
 # Publish
 publish/
 
-# Test Results
-TestResults/
+# Packages
+packages/
+
+# OS
+Thumbs.db
+.DS_Store
+
+# ASP.NET
+appsettings.Development.json

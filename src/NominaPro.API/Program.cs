@@ -7,6 +7,10 @@ using FluentValidation;
 using FluentValidation.AspNetCore;
 using NominaPro.Application.Validators;
 using NominaPro.Application.Mappings;
+using NominaPro.Infrastructure.Services;
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,8 +21,26 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 // Servicios
 builder.Services.AddOpenApi();
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        var key = builder.Configuration["Jwt:Key"];
+
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = false,
+            ValidateAudience = false,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(key!))
+        };
+    });
+builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
+builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IEmpresaRepository, EmpresaRepository>();
 builder.Services.AddScoped<IEmpresaService, EmpresaService>();
+builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddSingleton<AutoMapper.IMapper>(provider =>
 {
     var loggerFactory = provider.GetRequiredService<ILoggerFactory>();
@@ -44,6 +66,9 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapControllers();
 
