@@ -1,11 +1,13 @@
 using Microsoft.AspNetCore.Mvc;
 using NominaPro.Application.DTOs;
 using NominaPro.Application.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 
 namespace NominaPro.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class EmpresasController : ControllerBase
 {
     private readonly IEmpresaService _service;
