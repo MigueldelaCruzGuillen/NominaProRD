@@ -18,4 +18,5 @@ public class Empresa : BaseEntity
 
     public ICollection<Usuario> Usuarios { get; set; } = new List<Usuario>();
     public ICollection<Departamento> Departamentos { get; set; } = new List<Departamento>();
+    public ICollection<Puesto> Puestos { get; set; } = new List<Puesto>();
 }

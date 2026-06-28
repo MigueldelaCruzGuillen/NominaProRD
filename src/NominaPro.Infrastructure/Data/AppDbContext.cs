@@ -13,15 +13,28 @@ public class AppDbContext : DbContext
     public DbSet<Empresa> Empresas => Set<Empresa>();
     public DbSet<Usuario> Usuarios => Set<Usuario>();
     public DbSet<Departamento> Departamentos => Set<Departamento>();
+    public DbSet<Puesto> Puestos => Set<Puesto>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 
-         modelBuilder.Entity<Departamento>()
-           .HasOne(d => d.Empresa)
-           .WithMany(e => e.Departamentos)
-           .HasForeignKey(d => d.EmpresaId)
-           .OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<Usuario>()
+            .HasOne(u => u.Empresa)
+            .WithMany(e => e.Usuarios)
+            .HasForeignKey(u => u.EmpresaId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Departamento>()
+            .HasOne(d => d.Empresa)
+            .WithMany(e => e.Departamentos)
+            .HasForeignKey(d => d.EmpresaId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Puesto>()
+            .HasOne(p => p.Empresa)
+            .WithMany(e => e.Puestos)
+            .HasForeignKey(p => p.EmpresaId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

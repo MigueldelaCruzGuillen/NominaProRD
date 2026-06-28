@@ -54,10 +54,13 @@ builder.Services.AddSingleton<AutoMapper.IMapper>(provider =>
 });
 
 builder.Services.AddControllers();
+builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<CreateEmpresaDtoValidator>();
 builder.Services.AddScoped<IDepartamentoRepository, DepartamentoRepository>();
 builder.Services.AddScoped<IDepartamentoService, DepartamentoService>();
+builder.Services.AddScoped<IPuestoRepository, PuestoRepository>();
+builder.Services.AddScoped<IPuestoService, PuestoService>();
 
 var app = builder.Build();
 
