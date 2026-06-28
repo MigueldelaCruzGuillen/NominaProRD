@@ -4,6 +4,7 @@ using NominaPro.Application.DTOs;
 using NominaPro.Application.Interfaces;
 using MediatR;
 using NominaPro.Application.Features.Departamentos.Commands;
+using NominaPro.Application.Features.Departamentos.Queries;
 
 namespace NominaPro.API.Controllers;
 
@@ -23,11 +24,11 @@ public DepartamentosController(
     _service = service;
     _mediator = mediator;
 }
-    [HttpGet]
+   [HttpGet]
     public async Task<ActionResult<List<DepartamentoDto>>> GetAll()
-    {
-        return Ok(await _service.GetAllAsync());
-    }
+   {
+    return Ok(await _mediator.Send(new GetDepartamentosQuery()));
+   }
 
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<DepartamentoDto>> GetById(Guid id)
