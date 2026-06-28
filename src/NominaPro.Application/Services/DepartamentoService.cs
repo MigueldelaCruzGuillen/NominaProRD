@@ -7,11 +7,15 @@ namespace NominaPro.Application.Services;
 public class DepartamentoService : IDepartamentoService
 {
     private readonly IDepartamentoRepository _repository;
+private readonly ICurrentUserService _currentUser;
 
-    public DepartamentoService(IDepartamentoRepository repository)
-    {
-        _repository = repository;
-    }
+public DepartamentoService(
+    IDepartamentoRepository repository,
+    ICurrentUserService currentUser)
+{
+    _repository = repository;
+    _currentUser = currentUser;
+}
 
     public async Task<List<DepartamentoDto>> GetAllAsync()
     {
@@ -48,7 +52,7 @@ public class DepartamentoService : IDepartamentoService
         {
             Nombre = dto.Nombre,
             Descripcion = dto.Descripcion,
-            EmpresaId = dto.EmpresaId
+           EmpresaId = _currentUser.EmpresaId
         };
 
         await _repository.CreateAsync(departamento);

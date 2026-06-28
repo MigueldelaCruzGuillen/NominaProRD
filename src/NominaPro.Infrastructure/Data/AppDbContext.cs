@@ -14,6 +14,10 @@ public class AppDbContext : DbContext
     public DbSet<Usuario> Usuarios => Set<Usuario>();
     public DbSet<Departamento> Departamentos => Set<Departamento>();
     public DbSet<Puesto> Puestos => Set<Puesto>();
+    public DbSet<Empleado> Empleados => Set<Empleado>();
+    public DbSet<PeriodoNomina> PeriodosNomina => Set<PeriodoNomina>();
+    public DbSet<Nomina> Nominas => Set<Nomina>();
+    public DbSet<NominaDetalle> NominaDetalles => Set<NominaDetalle>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -36,5 +40,53 @@ public class AppDbContext : DbContext
             .WithMany(e => e.Puestos)
             .HasForeignKey(p => p.EmpresaId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Empleado>()
+            .HasOne(e => e.Empresa)
+            .WithMany(e => e.Empleados)
+            .HasForeignKey(e => e.EmpresaId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Empleado>()
+            .HasOne(e => e.Departamento)
+            .WithMany(d => d.Empleados)
+            .HasForeignKey(e => e.DepartamentoId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Empleado>()
+            .HasOne(e => e.Puesto)
+            .WithMany(p => p.Empleados)
+            .HasForeignKey(e => e.PuestoId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<PeriodoNomina>()
+            .HasOne(p => p.Empresa)
+            .WithMany(e => e.PeriodosNomina)
+            .HasForeignKey(p => p.EmpresaId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Nomina>()
+            .HasOne(n => n.Empresa)
+            .WithMany(e => e.Nominas)
+            .HasForeignKey(n => n.EmpresaId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Nomina>()
+            .HasOne(n => n.PeriodoNomina)
+            .WithMany()
+            .HasForeignKey(n => n.PeriodoNominaId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<NominaDetalle>()
+            .HasOne(d => d.Nomina)
+            .WithMany(n => n.Detalles)
+            .HasForeignKey(d => d.NominaId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<NominaDetalle>()
+            .HasOne(d => d.Empleado)
+            .WithMany(e => e.NominaDetalles)
+            .HasForeignKey(d => d.EmpleadoId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

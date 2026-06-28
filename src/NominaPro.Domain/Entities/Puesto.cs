@@ -11,4 +11,5 @@ public class Puesto : BaseEntity
     public Guid EmpresaId { get; set; }
 
     public Empresa Empresa { get; set; } = null!;
+    public ICollection<Empleado> Empleados { get; set; } = new List<Empleado>();
 }

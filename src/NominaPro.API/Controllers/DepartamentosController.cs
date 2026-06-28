@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NominaPro.Application.DTOs;
 using NominaPro.Application.Interfaces;
+using MediatR;
+using NominaPro.Application.Features.Departamentos.Commands;
 
 namespace NominaPro.API.Controllers;
 
@@ -12,11 +14,15 @@ public class DepartamentosController : ControllerBase
 {
     private readonly IDepartamentoService _service;
 
-    public DepartamentosController(IDepartamentoService service)
-    {
-        _service = service;
-    }
+  private readonly IMediator _mediator;
 
+public DepartamentosController(
+    IDepartamentoService service,
+    IMediator mediator)
+{
+    _service = service;
+    _mediator = mediator;
+}
     [HttpGet]
     public async Task<ActionResult<List<DepartamentoDto>>> GetAll()
     {
@@ -34,11 +40,11 @@ public class DepartamentosController : ControllerBase
         return Ok(departamento);
     }
 
-    [HttpPost]
-    public async Task<ActionResult<DepartamentoDto>> Create(CreateDepartamentoDto dto)
-    {
-        var departamento = await _service.CreateAsync(dto);
+   [HttpPost]
+public async Task<ActionResult<DepartamentoDto>> Create(CreateDepartamentoCommand command)
+{
+    var departamento = await _mediator.Send(command);
 
-        return CreatedAtAction(nameof(GetById), new { id = departamento.Id }, departamento);
-    }
+    return CreatedAtAction(nameof(GetById), new { id = departamento.Id }, departamento);
+}
 }

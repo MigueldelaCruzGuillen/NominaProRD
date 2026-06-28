@@ -11,6 +11,9 @@ using NominaPro.Infrastructure.Services;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using NominaPro.API.Services;
+using System.Reflection;
+using MediatR;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,8 +23,12 @@ builder.Services.AddDbContext<AppDbContext>(options =>
         builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Servicios
-builder.Services.AddOpenApi();
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    builder.Services.AddMediatR(cfg =>
+    cfg.RegisterServicesFromAssembly(typeof(NominaPro.Application.Services.NominaService).Assembly));
+     builder.Services.AddHttpContextAccessor();
+     builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
+     builder.Services.AddOpenApi();
+     builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
         var key = builder.Configuration["Jwt:Key"];
@@ -61,6 +68,10 @@ builder.Services.AddScoped<IDepartamentoRepository, DepartamentoRepository>();
 builder.Services.AddScoped<IDepartamentoService, DepartamentoService>();
 builder.Services.AddScoped<IPuestoRepository, PuestoRepository>();
 builder.Services.AddScoped<IPuestoService, PuestoService>();
+builder.Services.AddScoped<IEmpleadoRepository, EmpleadoRepository>();
+builder.Services.AddScoped<IEmpleadoService, EmpleadoService>();
+builder.Services.AddScoped<INominaCalculatorService, NominaCalculatorService>();
+builder.Services.AddScoped<INominaService, NominaService>();
 
 var app = builder.Build();
 
