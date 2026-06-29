@@ -4,7 +4,9 @@ public abstract class BaseEntity
 {
     public Guid Id { get; set; }
 
-    public DateTime FechaCreacion { get; set; } = DateTime.UtcNow;
+    public DateTime FechaCreacion { get; set; }
+
+    public DateTime? FechaActualizacion { get; set; }
 
     public bool Activo { get; set; } = true;
 }
