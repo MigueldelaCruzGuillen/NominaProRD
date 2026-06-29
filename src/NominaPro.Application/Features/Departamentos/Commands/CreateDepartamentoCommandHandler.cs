@@ -23,6 +23,10 @@ public class CreateDepartamentoCommandHandler
         CreateDepartamentoCommand request,
         CancellationToken cancellationToken)
     {
+        var existe = await _repository.ExistsByNombreAsync(request.Nombre, _currentUser.EmpresaId);
+
+       if (existe)
+       throw new InvalidOperationException("Ya existe un departamento con ese nombre.");
         var departamento = new Departamento
         {
             Nombre = request.Nombre,

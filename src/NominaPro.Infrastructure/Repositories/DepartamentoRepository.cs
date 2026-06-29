@@ -18,6 +18,11 @@ public class DepartamentoRepository : IDepartamentoRepository
     {
         return await _context.Departamentos.ToListAsync();
     }
+    public async Task<bool> ExistsByNombreAsync(string nombre, Guid empresaId)
+{
+    return await _context.Departamentos
+        .AnyAsync(d => d.EmpresaId == empresaId && d.Nombre.ToLower() == nombre.ToLower());
+}
 
     public async Task<Departamento?> GetByIdAsync(Guid id)
     {

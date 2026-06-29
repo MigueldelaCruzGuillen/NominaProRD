@@ -1,8 +1,7 @@
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NominaPro.Application.DTOs;
-using NominaPro.Application.Interfaces;
-using MediatR;
 using NominaPro.Application.Features.Departamentos.Commands;
 using NominaPro.Application.Features.Departamentos.Queries;
 
@@ -13,27 +12,23 @@ namespace NominaPro.API.Controllers;
 [Authorize]
 public class DepartamentosController : ControllerBase
 {
-    private readonly IDepartamentoService _service;
+    private readonly IMediator _mediator;
 
-  private readonly IMediator _mediator;
+    public DepartamentosController(IMediator mediator)
+    {
+        _mediator = mediator;
+    }
 
-public DepartamentosController(
-    IDepartamentoService service,
-    IMediator mediator)
-{
-    _service = service;
-    _mediator = mediator;
-}
-   [HttpGet]
+    [HttpGet]
     public async Task<ActionResult<List<DepartamentoDto>>> GetAll()
-   {
-    return Ok(await _mediator.Send(new GetDepartamentosQuery()));
-   }
+    {
+        return Ok(await _mediator.Send(new GetDepartamentosQuery()));
+    }
 
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<DepartamentoDto>> GetById(Guid id)
     {
-        var departamento = await _service.GetByIdAsync(id);
+        var departamento = await _mediator.Send(new GetDepartamentoByIdQuery(id));
 
         if (departamento is null)
             return NotFound();
@@ -41,11 +36,11 @@ public DepartamentosController(
         return Ok(departamento);
     }
 
-   [HttpPost]
-public async Task<ActionResult<DepartamentoDto>> Create(CreateDepartamentoCommand command)
-{
-    var departamento = await _mediator.Send(command);
+    [HttpPost]
+    public async Task<ActionResult<DepartamentoDto>> Create(CreateDepartamentoCommand command)
+    {
+        var departamento = await _mediator.Send(command);
 
-    return CreatedAtAction(nameof(GetById), new { id = departamento.Id }, departamento);
-}
+        return CreatedAtAction(nameof(GetById), new { id = departamento.Id }, departamento);
+    }
 }
