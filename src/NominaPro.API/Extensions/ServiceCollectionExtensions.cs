@@ -23,6 +23,8 @@ public static class ServiceCollectionExtensions
     {
         services.AddDbContext<AppDbContext>(options =>
             options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
+        
+        services.AddScoped<INominaRepository, NominaRepository>();
 
         services.AddMediatR(cfg =>
             cfg.RegisterServicesFromAssembly(typeof(NominaService).Assembly));

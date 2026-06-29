@@ -44,4 +44,21 @@ public class NominasController : ControllerBase
             })
         });
     }
+
+    [HttpGet]
+    public async Task<ActionResult<List<NominaResumenDto>>> GetAll()
+    {
+        return Ok(await _service.GetAllAsync());
+    }
+
+    [HttpGet("{id:guid}")]
+    public async Task<ActionResult<NominaDto>> GetById(Guid id)
+    {
+        var nomina = await _service.GetByIdAsync(id);
+
+        if (nomina is null)
+            return NotFound();
+
+        return Ok(nomina);
+    }
 }
