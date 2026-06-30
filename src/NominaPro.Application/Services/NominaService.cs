@@ -33,10 +33,20 @@ public class NominaService : INominaService
     {
         var empresaId = _currentUser.EmpresaId;
 
+        var yaExiste = await _nominaRepository.ExisteNominaPorPeriodoAsync(
+            empresaId,
+            dto.PeriodoNominaId);
+
+        if (yaExiste)
+            throw new InvalidOperationException("Ya existe una nómina generada para este período.");
+
         var periodo = await _periodoRepository.GetByIdAsync(dto.PeriodoNominaId);
 
         if (periodo is null || periodo.EmpresaId != empresaId)
             throw new InvalidOperationException("El período de nómina no existe.");
+
+        if (periodo.Estado == "Cerrado")
+            throw new InvalidOperationException("Este período ya está cerrado.");
 
         var empleados = await _empleadoRepository.GetAllAsync();
 
@@ -67,6 +77,9 @@ public class NominaService : INominaService
         nomina.TotalNeto = nomina.Detalles.Sum(d => d.NetoPagar);
 
         await _nominaRepository.CreateAsync(nomina);
+
+        periodo.Estado = "Cerrado";
+        await _periodoRepository.UpdateAsync(periodo);
 
         return nomina;
     }
