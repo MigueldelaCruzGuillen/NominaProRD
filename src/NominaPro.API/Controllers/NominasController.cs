@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NominaPro.Application.DTOs;
 using NominaPro.Application.Interfaces;
+using NominaPro.API.Services;
 
 namespace NominaPro.API.Controllers;
 
@@ -11,10 +12,14 @@ namespace NominaPro.API.Controllers;
 public class NominasController : ControllerBase
 {
     private readonly INominaService _service;
+    private readonly PdfService _pdfService;
 
-    public NominasController(INominaService service)
+    public NominasController(
+        INominaService service,
+        PdfService pdfService)
     {
         _service = service;
+        _pdfService = pdfService;
     }
 
     [HttpPost("generar")]
@@ -60,5 +65,30 @@ public class NominasController : ControllerBase
             return NotFound();
 
         return Ok(nomina);
+    }
+
+    [HttpGet("{nominaId:guid}/recibo/{empleadoId:guid}")]
+    public async Task<IActionResult> DescargarRecibo(
+        Guid nominaId,
+        Guid empleadoId)
+    {
+        var nomina = await _service.GetByIdAsync(nominaId);
+
+        if (nomina is null)
+            return NotFound();
+
+        var detalle = nomina.Detalles
+            .FirstOrDefault(x => x.EmpleadoId == empleadoId);
+
+        if (detalle is null)
+            return NotFound();
+
+        var pdf = _pdfService.GenerarReciboNomina(nomina, detalle);
+        Console.WriteLine($"PDF generado: {pdf.Length} bytes");
+
+       return File(
+         pdf,
+        "application/pdf");
+            
     }
 }

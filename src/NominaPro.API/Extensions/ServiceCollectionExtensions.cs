@@ -13,6 +13,7 @@ using NominaPro.Infrastructure.Data;
 using NominaPro.Infrastructure.Repositories;
 using NominaPro.Infrastructure.Services;
 
+
 namespace NominaPro.API.Extensions;
 
 public static class ServiceCollectionExtensions
@@ -25,6 +26,7 @@ public static class ServiceCollectionExtensions
             options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
         
         services.AddScoped<INominaRepository, NominaRepository>();
+        services.AddScoped<PdfService>();
 
         services.AddMediatR(cfg =>
             cfg.RegisterServicesFromAssembly(typeof(NominaService).Assembly));
