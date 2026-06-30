@@ -28,4 +28,5 @@ public class Empleado : BaseEntity
     public Guid PuestoId { get; set; }
     public Puesto Puesto { get; set; } = null!;
     public ICollection<NominaDetalle> NominaDetalles { get; set; } = new List<NominaDetalle>();
+    public ICollection<Asistencia> Asistencias { get; set; } = new List<Asistencia>();
 }

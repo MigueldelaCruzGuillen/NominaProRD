@@ -18,6 +18,7 @@ public class AppDbContext : DbContext
     public DbSet<PeriodoNomina> PeriodosNomina => Set<PeriodoNomina>();
     public DbSet<Nomina> Nominas => Set<Nomina>();
     public DbSet<NominaDetalle> NominaDetalles => Set<NominaDetalle>();
+    public DbSet<Asistencia> Asistencias => Set<Asistencia>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -88,5 +89,10 @@ public class AppDbContext : DbContext
             .WithMany(e => e.NominaDetalles)
             .HasForeignKey(d => d.EmpleadoId)
             .OnDelete(DeleteBehavior.Restrict);
+        modelBuilder.Entity<Asistencia>()
+            .HasOne(a => a.Empleado)
+            .WithMany(e => e.Asistencias)
+            .HasForeignKey(a => a.EmpleadoId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }
