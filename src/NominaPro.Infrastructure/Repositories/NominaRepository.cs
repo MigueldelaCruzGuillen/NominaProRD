@@ -25,7 +25,14 @@ public class NominaRepository : INominaRepository
     public async Task<Nomina?> GetByIdWithDetallesAsync(Guid id, Guid empresaId)
     {
         return await _context.Nominas
-            .Include(n => n.Detalles)
+            .Include(n => n.Empresa)
+.Include(n => n.PeriodoNomina)
+.Include(n => n.Detalles)
+    .ThenInclude(d => d.Empleado)
+        .ThenInclude(e => e.Departamento)
+.Include(n => n.Detalles)
+    .ThenInclude(d => d.Empleado)
+        .ThenInclude(e => e.Puesto)
             .FirstOrDefaultAsync(n => n.Id == id && n.EmpresaId == empresaId);
     }
 

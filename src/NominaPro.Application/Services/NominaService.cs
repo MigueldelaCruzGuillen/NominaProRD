@@ -97,6 +97,9 @@ public class NominaService : INominaService
             Detalles = nomina.Detalles.Select(d => new NominaDetalleDto
             {
                 EmpleadoId = d.EmpleadoId,
+                EmpleadoNombre = $"{d.Empleado.Nombre} {d.Empleado.Apellido}",
+                Departamento = d.Empleado.Departamento.Nombre,
+                Puesto = d.Empleado.Puesto.Nombre,
                 SalarioBase = d.SalarioBase,
                 Afp = d.Afp,
                 Sfs = d.Sfs,

@@ -28,7 +28,9 @@ public class PdfService
                     col.Spacing(10);
 
                     col.Item().Text($"Nómina ID: {nomina.Id}");
-                    col.Item().Text($"Empleado ID: {detalle.EmpleadoId}");
+                    col.Item().Text($"Empleado: {detalle.EmpleadoNombre}");
+                    col.Item().Text($"Departamento: {detalle.Departamento}");
+                    col.Item().Text($"Puesto: {detalle.Puesto}");
                     col.Item().Text($"Fecha generación: {nomina.FechaGeneracion:dd/MM/yyyy}");
 
                     col.Item().LineHorizontal(1);
