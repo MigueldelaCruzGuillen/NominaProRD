@@ -4,5 +4,5 @@ namespace NominaPro.Application.Interfaces;
 
 public interface INominaCalculatorService
 {
-    NominaDetalle CalcularDetalle(Empleado empleado);
+    NominaDetalle CalcularDetalle(Empleado empleado, decimal horasExtras);
 }

@@ -10,22 +10,33 @@ public class NominaService : INominaService
     private readonly INominaRepository _nominaRepository;
     private readonly INominaCalculatorService _calculator;
     private readonly ICurrentUserService _currentUser;
+    private readonly IRepository<PeriodoNomina> _periodoRepository;
+    private readonly IAsistenciaRepository _asistenciaRepository;
 
     public NominaService(
         IRepository<Empleado> empleadoRepository,
         INominaRepository nominaRepository,
         INominaCalculatorService calculator,
-        ICurrentUserService currentUser)
+        ICurrentUserService currentUser,
+        IRepository<PeriodoNomina> periodoRepository,
+        IAsistenciaRepository asistenciaRepository)
     {
         _empleadoRepository = empleadoRepository;
         _nominaRepository = nominaRepository;
         _calculator = calculator;
         _currentUser = currentUser;
+        _periodoRepository = periodoRepository;
+        _asistenciaRepository = asistenciaRepository;
     }
 
     public async Task<Nomina> GenerarNominaAsync(GenerarNominaDto dto)
     {
         var empresaId = _currentUser.EmpresaId;
+
+        var periodo = await _periodoRepository.GetByIdAsync(dto.PeriodoNominaId);
+
+        if (periodo is null || periodo.EmpresaId != empresaId)
+            throw new InvalidOperationException("El período de nómina no existe.");
 
         var empleados = await _empleadoRepository.GetAllAsync();
 
@@ -42,7 +53,12 @@ public class NominaService : INominaService
 
         foreach (var empleado in empleadosEmpresa)
         {
-            var detalle = _calculator.CalcularDetalle(empleado);
+            var horasExtras = await _asistenciaRepository.GetHorasExtrasPeriodoAsync(
+                empleado.Id,
+                periodo.FechaInicio,
+                periodo.FechaFin);
+
+            var detalle = _calculator.CalcularDetalle(empleado, horasExtras);
             nomina.Detalles.Add(detalle);
         }
 

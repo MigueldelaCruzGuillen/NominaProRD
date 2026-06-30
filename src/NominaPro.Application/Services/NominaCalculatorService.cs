@@ -8,20 +8,25 @@ public class NominaCalculatorService : INominaCalculatorService
     private const decimal PorcentajeAfp = 0.0287m;
     private const decimal PorcentajeSfs = 0.0304m;
 
-    public NominaDetalle CalcularDetalle(Empleado empleado)
+    public NominaDetalle CalcularDetalle(Empleado empleado, decimal horasExtras)
     {
         var salarioBase = empleado.SalarioBase;
 
-        var afp = salarioBase * PorcentajeAfp;
-        var sfs = salarioBase * PorcentajeSfs;
-        var isr = CalcularIsr(salarioBase);
+        var valorHora = salarioBase / 23.83m / 8;
+        var montoHorasExtras = valorHora * horasExtras * 1.35m;
 
-        var totalIngresos = salarioBase;
+        var totalIngresos = salarioBase + montoHorasExtras;
+
+        var afp = totalIngresos * PorcentajeAfp;
+        var sfs = totalIngresos * PorcentajeSfs;
+        var isr = CalcularIsr(totalIngresos);
+
         var totalDeducciones = afp + sfs + isr;
         var netoPagar = totalIngresos - totalDeducciones;
 
         return new NominaDetalle
         {
+            HorasExtras = Math.Round(montoHorasExtras, 2),
             EmpleadoId = empleado.Id,
             SalarioBase = salarioBase,
             Afp = Math.Round(afp, 2),

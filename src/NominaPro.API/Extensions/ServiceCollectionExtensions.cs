@@ -80,6 +80,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ITokenService, TokenService>();
         services.AddScoped<INominaCalculatorService, NominaCalculatorService>();
         services.AddScoped<INominaService, NominaService>();
+        services.AddScoped<IAsistenciaRepository, AsistenciaRepository>();
 
         return services;
     }
