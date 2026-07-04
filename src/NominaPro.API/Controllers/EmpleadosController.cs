@@ -34,6 +34,19 @@ public class EmpleadosController : ControllerBase
         return Ok(empleado);
     }
 
+    [HttpDelete("{id:guid}")]
+    public async Task<IActionResult> Delete(Guid id)
+    {
+        var empleado = await _service.GetEntityByIdForUpdateAsync(id);
+
+        if (empleado is null)
+            return NotFound();
+
+        await _service.DeleteAsync(empleado);
+
+        return NoContent();
+    }
+
     [HttpPost]
     public async Task<ActionResult<EmpleadoDto>> Create(CreateEmpleadoDto dto)
     {

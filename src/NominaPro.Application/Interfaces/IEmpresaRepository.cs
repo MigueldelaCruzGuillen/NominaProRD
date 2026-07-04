@@ -7,4 +7,5 @@ public interface IEmpresaRepository
     Task<List<Empresa>> GetAllAsync();
     Task<Empresa?> GetByIdAsync(Guid id);
     Task<Empresa> CreateAsync(Empresa empresa);
+    Task UpdateAsync(Empleado empleado);
 }

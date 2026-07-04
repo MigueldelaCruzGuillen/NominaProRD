@@ -13,6 +13,19 @@ public class EmpleadoService : IEmpleadoService
         _repository = repository;
     }
 
+    public async Task<Empleado?> GetEntityByIdForUpdateAsync(Guid id)
+    {
+        return await _repository.GetByIdAsync(id);
+    }
+
+    public async Task DeleteAsync(Empleado empleado)
+    {
+        empleado.Activo = false;
+        empleado.Estado = "Inactivo";
+
+        await _repository.UpdateAsync(empleado);
+    }
+
     public async Task<List<EmpleadoDto>> GetAllAsync()
     {
         var empleados = await _repository.GetAllAsync();

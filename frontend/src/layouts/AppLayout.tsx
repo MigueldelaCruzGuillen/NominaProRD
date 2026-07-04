@@ -8,20 +8,35 @@ import { EmpleadosPage } from "../features/empleados/EmpleadosPage";
 import { AsistenciasPage } from "../features/asistencias/AsistenciasPage";
 import { PeriodosPage } from "../features/periodos/PeriodosPage";
 
+// ✅ 1. Actualizar Props
 type Props = {
   onLogout: () => void;
+  onToggleTheme: () => void; // Agregar onToggleTheme
 };
 
-export function AppLayout({ onLogout }: Props) {
+// ✅ 2. Actualizar la función
+export function AppLayout({ onLogout, onToggleTheme }: Props) {
   const [page, setPage] = useState<
-  "dashboard" | "nominas" | "empleados" | "asistencias" | "periodos"
->("dashboard");
+    "dashboard" | "nominas" | "empleados" | "asistencias" | "periodos"
+  >("dashboard");
+
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+
   return (
     <Box sx={{ display: "flex", minHeight: "100vh", bgcolor: "background.default" }}>
-      <Sidebar onNavigate={setPage} />
+      <Sidebar
+        collapsed={!sidebarOpen}
+        currentPage={page}
+        onNavigate={setPage}
+      />
 
       <Box sx={{ flexGrow: 1 }}>
-        <Topbar onLogout={onLogout} />
+        {/* ✅ 3. Pasar onToggleTheme al Topbar */}
+        <Topbar
+          onLogout={onLogout}
+          onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+          onToggleTheme={onToggleTheme}
+        />
 
         <Box component="main" sx={{ p: 3 }}>
           {page === "dashboard" && <DashboardPage />}

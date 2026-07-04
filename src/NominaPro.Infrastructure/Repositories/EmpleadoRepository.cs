@@ -24,6 +24,17 @@ public class EmpleadoRepository : IEmpleadoRepository
         return await _context.Empleados.FindAsync(id);
     }
 
+    public async Task DeleteAsync(Empleado empleado)
+    {
+        _context.Empleados.Remove(empleado);
+        await _context.SaveChangesAsync();
+    }
+    public async Task UpdateAsync(Empleado empleado)
+    {
+        _context.Empleados.Update(empleado);
+        await _context.SaveChangesAsync();
+    }
+
     public async Task<Empleado> CreateAsync(Empleado empleado)
     {
         _context.Empleados.Add(empleado);

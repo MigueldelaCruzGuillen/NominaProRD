@@ -23,6 +23,13 @@ public class EmpresaRepository : IEmpresaRepository
     {
         return await _context.Empresas.FindAsync(id);
     }
+    public async Task UpdateAsync(Empleado empleado)
+    {
+        _context.Empleados.Update(empleado);
+        await _context.SaveChangesAsync();
+    }
+
+
 
     public async Task<Empresa> CreateAsync(Empresa empresa)
     {

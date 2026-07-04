@@ -3,8 +3,10 @@ export type Empleado = {
   nombre: string;
   apellido: string;
   cedula: string;
+  fechaNacimiento: string;
   telefono: string;
   correo: string;
+  direccion: string;
   fechaIngreso: string;
   salarioBase: number;
   estado: string;
