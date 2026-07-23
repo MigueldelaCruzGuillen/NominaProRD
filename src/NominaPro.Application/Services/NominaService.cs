@@ -12,6 +12,7 @@ public class NominaService : INominaService
     private readonly ICurrentUserService _currentUser;
     private readonly IRepository<PeriodoNomina> _periodoRepository;
     private readonly IAsistenciaRepository _asistenciaRepository;
+    private readonly IAuditoriaService _auditoriaService;
 
     public NominaService(
         IRepository<Empleado> empleadoRepository,
@@ -19,7 +20,8 @@ public class NominaService : INominaService
         INominaCalculatorService calculator,
         ICurrentUserService currentUser,
         IRepository<PeriodoNomina> periodoRepository,
-        IAsistenciaRepository asistenciaRepository)
+        IAsistenciaRepository asistenciaRepository,
+        IAuditoriaService auditoriaService)
     {
         _empleadoRepository = empleadoRepository;
         _nominaRepository = nominaRepository;
@@ -27,6 +29,7 @@ public class NominaService : INominaService
         _currentUser = currentUser;
         _periodoRepository = periodoRepository;
         _asistenciaRepository = asistenciaRepository;
+        _auditoriaService = auditoriaService;
     }
 
     public async Task<Nomina> GenerarNominaAsync(GenerarNominaDto dto)
@@ -45,8 +48,21 @@ public class NominaService : INominaService
         if (periodo is null || periodo.EmpresaId != empresaId)
             throw new InvalidOperationException("El período de nómina no existe.");
 
+        // Validar que el período no esté cerrado
         if (periodo.Estado == "Cerrado")
-            throw new InvalidOperationException("Este período ya está cerrado.");
+        {
+            throw new InvalidOperationException(
+                "No se puede generar una nómina para un período cerrado."
+            );
+        }
+
+        // Validar que el período pertenezca a la empresa actual
+        if (periodo.EmpresaId != _currentUser.EmpresaId)
+        {
+            throw new UnauthorizedAccessException(
+                "El período no pertenece a la empresa actual."
+            );
+        }
 
         var empleados = await _empleadoRepository.GetAllAsync();
 
@@ -68,7 +84,7 @@ public class NominaService : INominaService
                 periodo.FechaInicio,
                 periodo.FechaFin);
 
-            var detalle = _calculator.CalcularDetalle(empleado, horasExtras);
+            var detalle = await _calculator.CalcularDetalleAsync(empleado, horasExtras);
             nomina.Detalles.Add(detalle);
         }
 
@@ -78,31 +94,19 @@ public class NominaService : INominaService
 
         await _nominaRepository.CreateAsync(nomina);
 
+        //  Auditoría inmediatamente después de guardar la nómina
+        await _auditoriaService.RegistrarAsync(
+            _currentUser.UsuarioId,
+            _currentUser.Email,
+            "Nóminas",
+            "Generar",
+            $"Generó la nómina {nomina.Id} para el período {periodo.Nombre}"
+        );
+
         periodo.Estado = "Cerrado";
         await _periodoRepository.UpdateAsync(periodo);
 
         return nomina;
-    }
-
-    public async Task<List<NominaResumenDto>> GetAllAsync()
-    {
-        var empresaId = _currentUser.EmpresaId;
-
-        var nominas = await _nominaRepository.GetAllByEmpresaAsync(empresaId);
-
-        return nominas
-            .OrderByDescending(n => n.FechaGeneracion)
-            .Select(n => new NominaResumenDto
-            {
-                Id = n.Id,
-                PeriodoNominaId = n.PeriodoNominaId,
-                TotalBruto = n.TotalBruto,
-                TotalDeducciones = n.TotalDeducciones,
-                TotalNeto = n.TotalNeto,
-                Estado = n.Estado,
-                FechaGeneracion = n.FechaGeneracion
-            })
-            .ToList();
     }
 
     public async Task<NominaDto?> GetByIdAsync(Guid id)
@@ -117,12 +121,20 @@ public class NominaService : INominaService
         return new NominaDto
         {
             Id = nomina.Id,
+            PeriodoNombre = nomina.PeriodoNomina.Nombre,
             PeriodoNominaId = nomina.PeriodoNominaId,
             TotalBruto = nomina.TotalBruto,
             TotalDeducciones = nomina.TotalDeducciones,
             TotalNeto = nomina.TotalNeto,
             Estado = nomina.Estado,
             FechaGeneracion = nomina.FechaGeneracion,
+            PagadaPorUsuarioId = nomina.PagadaPorUsuarioId,
+            FechaPago = nomina.FechaPago,
+            PagadaPorUsuario = nomina.PagadaPorUsuario?.Email,  // ✅ Agregado
+            EmpresaNombre = nomina.Empresa.Nombre,
+            EmpresaRnc = nomina.Empresa.Rnc,
+            EmpresaDireccion = nomina.Empresa.Direccion,
+            EmpresaTelefono = nomina.Empresa.Telefono,
             Detalles = nomina.Detalles.Select(d => new NominaDetalleDto
             {
                 EmpleadoId = d.EmpleadoId,
@@ -139,6 +151,21 @@ public class NominaService : INominaService
             }).ToList()
         };
     }
+    public async Task<List<NominaResumenDto>> GetAllAsync()
+    {
+        var nominas = await _nominaRepository.GetAllAsync(_currentUser.EmpresaId);
+
+        return nominas.Select(n => new NominaResumenDto
+        {
+            Id = n.Id,
+            PeriodoNominaId = n.PeriodoNominaId,
+            TotalBruto = n.TotalBruto,
+            TotalDeducciones = n.TotalDeducciones,
+            TotalNeto = n.TotalNeto,
+            Estado = n.Estado,
+            FechaGeneracion = n.FechaGeneracion
+        }).ToList();
+    }
 
     public async Task<Nomina?> GetEntityByIdForUpdateAsync(Guid id)
     {
@@ -150,5 +177,16 @@ public class NominaService : INominaService
     public async Task UpdateAsync(Nomina nomina)
     {
         await _nominaRepository.UpdateAsync(nomina);
+
+        if (nomina.Estado == "Pagada")
+        {
+            await _auditoriaService.RegistrarAsync(
+                _currentUser.UsuarioId,
+                _currentUser.Email,
+                "Nóminas",
+                "Pagar",
+                $"Marcó como pagada la nómina {nomina.Id}"
+            );
+        }
     }
 }

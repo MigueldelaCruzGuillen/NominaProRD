@@ -12,4 +12,5 @@ public class Departamento : BaseEntity
 
     public Empresa Empresa { get; set; } = null!;
     public ICollection<Empleado> Empleados { get; set; } = new List<Empleado>();
+    public ICollection<Puesto> Puestos { get; set; } = new List<Puesto>();
 }

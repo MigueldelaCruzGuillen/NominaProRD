@@ -11,7 +11,12 @@ export type Empleado = {
   salarioBase: number;
   estado: string;
   tipoContrato: string;
+
   empresaId: string;
   departamentoId: string;
   puestoId: string;
+
+  empresaNombre: string;
+  departamentoNombre: string;
+  puestoNombre: string;
 };

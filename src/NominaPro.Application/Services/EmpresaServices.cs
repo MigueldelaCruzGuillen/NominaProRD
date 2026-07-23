@@ -7,10 +7,18 @@ namespace NominaPro.Application.Services;
 public class EmpresaService : IEmpresaService
 {
     private readonly IEmpresaRepository _repository;
+    private readonly IAuditoriaService _auditoriaService;
+    private readonly ICurrentUserService _currentUser;
+    
 
-    public EmpresaService(IEmpresaRepository repository)
+    public EmpresaService(
+        IEmpresaRepository repository,
+        IAuditoriaService auditoriaService,
+        ICurrentUserService currentUser)
     {
         _repository = repository;
+        _auditoriaService = auditoriaService;
+        _currentUser = currentUser;
     }
 
     public async Task<List<EmpresaDto>> GetAllAsync()
@@ -61,6 +69,14 @@ public class EmpresaService : IEmpresaService
 
         await _repository.CreateAsync(empresa);
 
+        await _auditoriaService.RegistrarAsync(
+            _currentUser.UsuarioId,
+            _currentUser.Email,
+            "Empresas",
+            "Crear",
+            $"Se creó la empresa {empresa.Nombre}"
+        );
+
         return new EmpresaDto
         {
             Id = empresa.Id,
@@ -71,5 +87,38 @@ public class EmpresaService : IEmpresaService
             Correo = empresa.Correo,
             Activa = empresa.Activa
         };
+    }
+
+    public async Task<Empresa?> GetEntityByIdForUpdateAsync(Guid id)
+    {
+        return await _repository.GetByIdAsync(id);
+    }
+
+    public async Task UpdateAsync(Empresa empresa)
+    {
+        await _repository.UpdateAsync(empresa);
+
+        await _auditoriaService.RegistrarAsync(
+            _currentUser.UsuarioId,
+            _currentUser.Email,
+            "Empresas",
+            "Editar",
+            $"Actualizó la información de la empresa {empresa.Nombre}"
+        );
+    }
+
+    public async Task DeleteAsync(Empresa empresa)
+    {
+        empresa.Activa = false;
+
+        await _repository.UpdateAsync(empresa);
+
+        await _auditoriaService.RegistrarAsync(
+            _currentUser.UsuarioId,
+            _currentUser.Email,
+            "Empresas",
+            "Desactivar",
+            $"Desactivó la empresa {empresa.Nombre}"
+        );
     }
 }

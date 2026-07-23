@@ -7,4 +7,5 @@ public interface IDepartamentoService
     Task<List<DepartamentoDto>> GetAllAsync();
     Task<DepartamentoDto?> GetByIdAsync(Guid id);
     Task<DepartamentoDto> CreateAsync(CreateDepartamentoDto dto);
+    Task<DepartamentoDto?> UpdateAsync(Guid id,UpdateDepartamentoDto dto);
 }

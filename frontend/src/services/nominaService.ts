@@ -1,8 +1,18 @@
 import { api } from "./api";
 import type { Nomina, NominaResumen } from "../types/nomina";
 
+export type GenerarNominaRequest = {
+  empresaId: string;
+  periodoNominaId: string;
+};
+
 export async function getNominas(): Promise<NominaResumen[]> {
   const response = await api.get<NominaResumen[]>("/nominas");
+  return response.data;
+}
+
+export async function generarNomina(data: GenerarNominaRequest) {
+  const response = await api.post("/nominas/generar", data);
   return response.data;
 }
 

@@ -5,11 +5,29 @@ namespace NominaPro.Application.Services;
 
 public class NominaCalculatorService : INominaCalculatorService
 {
-    private const decimal PorcentajeAfp = 0.0287m;
-    private const decimal PorcentajeSfs = 0.0304m;
+    private readonly IConfiguracionNominaRepository _configuracionRepository;
+    private readonly ICurrentUserService _currentUser;
 
-    public NominaDetalle CalcularDetalle(Empleado empleado, decimal horasExtras)
+    public NominaCalculatorService(
+        IConfiguracionNominaRepository configuracionRepository,
+        ICurrentUserService currentUser)
     {
+        _configuracionRepository = configuracionRepository;
+        _currentUser = currentUser;
+    }
+
+    public async Task<NominaDetalle> CalcularDetalleAsync(Empleado empleado, decimal horasExtras)
+    {
+        // Cargar configuración de nómina
+        var configuracion = await _configuracionRepository.GetByEmpresaAsync(
+            _currentUser.EmpresaId
+        );
+
+        var porcentajeAfp = configuracion?.PorcentajeAfp ?? 2.87m;
+        var porcentajeSfs = configuracion?.PorcentajeSfs ?? 3.04m;
+        var aplicarIsr = configuracion?.AplicarIsr ?? true;
+        var decimales = configuracion?.Decimales ?? 2;
+
         var salarioBase = empleado.SalarioBase;
 
         var valorHora = salarioBase / 23.83m / 8;
@@ -17,24 +35,36 @@ public class NominaCalculatorService : INominaCalculatorService
 
         var totalIngresos = salarioBase + montoHorasExtras;
 
-        var afp = totalIngresos * PorcentajeAfp;
-        var sfs = totalIngresos * PorcentajeSfs;
-        var isr = CalcularIsr(totalIngresos);
+        // Calcular deducciones con porcentajes de configuración
+        var afp = totalIngresos * (porcentajeAfp / 100m);
+        var sfs = totalIngresos * (porcentajeSfs / 100m);
+        var isr = aplicarIsr
+            ? CalcularIsr(totalIngresos)
+            : 0m;
+
+        // Redondear según configuración
+        afp = Math.Round(afp, decimales);
+        sfs = Math.Round(sfs, decimales);
+        isr = Math.Round(isr, decimales);
 
         var totalDeducciones = afp + sfs + isr;
         var netoPagar = totalIngresos - totalDeducciones;
 
         return new NominaDetalle
         {
-            HorasExtras = Math.Round(montoHorasExtras, 2),
+            HorasExtras = Math.Round(montoHorasExtras, decimales),
             EmpleadoId = empleado.Id,
             SalarioBase = salarioBase,
-            Afp = Math.Round(afp, 2),
-            Sfs = Math.Round(sfs, 2),
-            Isr = Math.Round(isr, 2),
-            TotalIngresos = Math.Round(totalIngresos, 2),
-            TotalDeducciones = Math.Round(totalDeducciones, 2),
-            NetoPagar = Math.Round(netoPagar, 2)
+            Afp = afp,
+            Sfs = sfs,
+            Isr = isr,
+            TotalIngresos = Math.Round(totalIngresos, decimales),
+            TotalDeducciones = Math.Round(totalDeducciones, decimales),
+            NetoPagar = Math.Round(netoPagar, decimales),
+            PorcentajeAfpAplicado = porcentajeAfp,
+            PorcentajeSfsAplicado = porcentajeSfs,
+            IsrAplicado = aplicarIsr,
+            DecimalesAplicados = decimales,
         };
     }
 

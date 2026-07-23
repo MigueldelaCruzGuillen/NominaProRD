@@ -3,6 +3,7 @@ using NominaPro.Application.Interfaces;
 using NominaPro.Domain.Entities;
 using NominaPro.Infrastructure.Data;
 
+
 namespace NominaPro.Infrastructure.Repositories;
 
 public class EmpresaRepository : IEmpresaRepository
@@ -39,4 +40,10 @@ public class EmpresaRepository : IEmpresaRepository
 
         return empresa;
     }
+
+    public async Task UpdateAsync(Empresa empresa)
+{
+    _context.Empresas.Update(empresa);
+    await _context.SaveChangesAsync();
+}
 }

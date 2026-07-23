@@ -1,3 +1,4 @@
+
 using NominaPro.Domain.Common;
 
 namespace NominaPro.Domain.Entities;
@@ -24,4 +25,9 @@ public class NominaDetalle : BaseEntity
     public decimal TotalIngresos { get; set; }
     public decimal TotalDeducciones { get; set; }
     public decimal NetoPagar { get; set; }
+
+    public decimal PorcentajeAfpAplicado { get; set; }
+    public decimal PorcentajeSfsAplicado { get; set; }
+    public bool IsrAplicado { get; set; }
+    public int DecimalesAplicados { get; set; }
 }

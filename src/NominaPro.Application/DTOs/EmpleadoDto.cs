@@ -20,4 +20,10 @@ public class EmpleadoDto
     public Guid EmpresaId { get; set; }
     public Guid DepartamentoId { get; set; }
     public Guid PuestoId { get; set; }
+    public DateTime FechaNacimiento { get; set; }
+    public string Direccion { get; set; } = string.Empty;
+
+    public string EmpresaNombre { get; set; } = string.Empty;
+    public string DepartamentoNombre { get; set; } = string.Empty;
+    public string PuestoNombre { get; set; } = string.Empty;
 }

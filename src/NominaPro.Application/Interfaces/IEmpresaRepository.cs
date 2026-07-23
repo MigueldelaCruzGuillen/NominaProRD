@@ -8,4 +8,6 @@ public interface IEmpresaRepository
     Task<Empresa?> GetByIdAsync(Guid id);
     Task<Empresa> CreateAsync(Empresa empresa);
     Task UpdateAsync(Empleado empleado);
+    
+    Task UpdateAsync(Empresa empresa);
 }

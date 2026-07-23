@@ -1,22 +1,26 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import {
     Box,
     Button,
     Typography,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
-import { createEmpleado, getEmpleados, updateEmpleado } from "../../services/empleadoService";
+import { createEmpleado, updateEmpleado, deleteEmpleado } from "../../services/empleadoService";
 import type { Empleado } from "../../types/empleado";
 import { getDepartamentos } from "../../services/departamentoService";
 import { getPuestos } from "../../services/puestoService";
 import type { Departamento } from "../../types/departamento";
 import type { Puesto } from "../../types/puesto";
-import { deleteEmpleado } from "../../services/empleadoService";
 import AppSnackbar from "../../components/AppSnackbar";
-import { EmpleadoToolbar } from "../../components/EmpleadoToolbar";
+import { EmpleadoToolbar } from "./EmpleadoToolbar";
 import { EmpleadoTable } from "./EmpleadoTable";
 import { EmpleadoDialog } from "./EmpleadoDialog";
+import { EmpleadoDetailsDialog } from "./EmpleadoDetailsDialog";
 import { useEmpleados } from "./hooks/useEmpleados";
+import { PageHeader } from "../../components/common/PageHeader";
+import ConfirmDialog from "../../components/common/ConfirmDialog";
+import { useAuth } from "../../contexts/AuthContext";
+import { useConfiguracion } from "../../contexts/ConfiguracionContext";
 
 // Constante fuera del componente
 const initialForm = {
@@ -35,13 +39,23 @@ const initialForm = {
 };
 
 export function EmpleadosPage() {
-    const { empleados, setEmpleados, loading, cargarEmpleados } = useEmpleados();
+    const { hasRole } = useAuth();
+    const { configuracion } = useConfiguracion();
+    const puedeGestionarEmpleados = hasRole("Administrador", "RRHH");
+    const [departamentoFiltro, setDepartamentoFiltro] = useState("Todos");
+    const [puestoFiltro, setPuestoFiltro] = useState("Todos");
+    const { empleados, setEmpleados } = useEmpleados();
     const [search, setSearch] = useState("");
     const [open, setOpen] = useState(false);
     const [departamentos, setDepartamentos] = useState<Departamento[]>([]);
     const [puestos, setPuestos] = useState<Puesto[]>([]);
     const [editingId, setEditingId] = useState<string | null>(null);
+    const [empleadoAEliminar, setEmpleadoAEliminar] = useState<Empleado | null>(null);
+    const [empleadoDetalle, setEmpleadoDetalle] = useState<Empleado | null>(null);
     const [estadoFiltro, setEstadoFiltro] = useState("Activo");
+    const [salarioDesde, setSalarioDesde] = useState("");
+    const [salarioHasta, setSalarioHasta] = useState("");
+    const [selected, setSelected] = useState<string[]>([]);
     const [snackbar, setSnackbar] = useState({
         open: false,
         message: "",
@@ -57,14 +71,79 @@ export function EmpleadosPage() {
     }, []);
 
     const empleadosFiltrados = empleados
-        .filter((e) =>
+        ?.filter((e) =>
             estadoFiltro === "Todos" ? true : e.estado === estadoFiltro
         )
-        .filter((e) =>
+        ?.filter((e) =>
+            departamentoFiltro === "Todos" ? true : e.departamentoId === departamentoFiltro
+        )
+        ?.filter((e) =>
+            puestoFiltro === "Todos" ? true : e.puestoId === puestoFiltro
+        )
+        ?.filter((e) =>
+            salarioDesde ? e.salarioBase >= Number(salarioDesde) : true
+        )
+        ?.filter((e) =>
+            salarioHasta ? e.salarioBase <= Number(salarioHasta) : true
+        )
+        ?.filter((e) =>
             `${e.nombre} ${e.apellido} ${e.cedula} ${e.correo}`
                 .toLowerCase()
                 .includes(search.toLowerCase())
-        );
+        ) || [];
+
+    function toggleEmpleado(id: string) {
+        setSelected((prev) => {
+            if (prev.includes(id)) {
+                return prev.filter((x) => x !== id);
+            } else {
+                return [...prev, id];
+            }
+        });
+    }
+
+    function toggleTodos() {
+        setSelected((prev) => {
+            // Si ya estÃ¡n todos seleccionados, deseleccionar todos
+            if (prev.length === empleadosFiltrados.length && empleadosFiltrados.length > 0) {
+                return [];
+            }
+            // Si no, seleccionar todos los que estÃ¡n filtrados actualmente
+            return empleadosFiltrados.map((e) => e.id);
+        });
+    }
+
+    async function desactivarSeleccionados() {
+        if (selected.length === 0) return;
+
+        const confirmar = confirm(`Â¿Desactivar ${selected.length} empleados?`);
+        if (!confirmar) return;
+
+        try {
+            await Promise.all(selected.map((id) => deleteEmpleado(id)));
+
+            setEmpleados(
+                empleados.map((e) =>
+                    selected.includes(e.id) ? { ...e, estado: "Inactivo" } : e
+                )
+            );
+
+            setSelected([]);
+
+            setSnackbar({
+                open: true,
+                message: `${selected.length} empleado(s) desactivado(s) correctamente.`,
+                severity: "warning"
+            });
+        } catch (error: any) {
+            console.error("Error al desactivar empleados:", error);
+            setSnackbar({
+                open: true,
+                message: "Error al desactivar los empleados.",
+                severity: "error"
+            });
+        }
+    }
 
     function handleEdit(empleado: Empleado) {
         setEditingId(empleado.id);
@@ -76,8 +155,13 @@ export function EmpleadosPage() {
             telefono: empleado.telefono,
             correo: empleado.correo,
             direccion: empleado.direccion,
-            fechaNacimiento: empleado.fechaNacimiento.substring(0, 10),
-            fechaIngreso: empleado.fechaIngreso.substring(0, 10),
+            fechaNacimiento: empleado.fechaNacimiento
+                ? empleado.fechaNacimiento.substring(0, 10)
+                : "",
+
+            fechaIngreso: empleado.fechaIngreso
+                ? empleado.fechaIngreso.substring(0, 10)
+                : "",
             salarioBase: empleado.salarioBase.toString(),
             tipoContrato: empleado.tipoContrato,
             departamentoId: empleado.departamentoId,
@@ -87,20 +171,26 @@ export function EmpleadosPage() {
         setOpen(true);
     }
 
-    async function handleDeleteEmpleado(empleado: Empleado) {
-        const confirmar = confirm(
-            `¿Seguro que deseas eliminar a ${empleado.nombre} ${empleado.apellido}?`
-        );
+    // 3. Reemplazar handleDeleteEmpleado
+    function handleDeleteEmpleado(empleado: Empleado) {
+        setEmpleadoAEliminar(empleado);
+    }
 
-        if (!confirmar) return;
+    // 4. Crear funciÃ³n confirmarEliminarEmpleado
+    async function confirmarEliminarEmpleado() {
+        if (!empleadoAEliminar) return;
 
-        await deleteEmpleado(empleado.id);
+        await deleteEmpleado(empleadoAEliminar.id);
 
         setEmpleados(
             empleados.map((e) =>
-                e.id === empleado.id ? { ...e, estado: "Inactivo" } : e
+                e.id === empleadoAEliminar.id
+                    ? { ...e, estado: "Inactivo" }
+                    : e
             )
         );
+
+        setEmpleadoAEliminar(null);
 
         setSnackbar({
             open: true,
@@ -143,7 +233,7 @@ export function EmpleadosPage() {
 
             setEmpleados([...empleados, nuevoEmpleado]);
             setOpen(false);
-            // Reiniciar el formulario después de crear
+            // Reiniciar el formulario despuÃ©s de crear
             setForm(initialForm);
             setEditingId(null);
 
@@ -162,7 +252,7 @@ export function EmpleadosPage() {
         if (!editingId) return;
 
         try {
-            await updateEmpleado(editingId, {
+            const empleadoActualizado = await updateEmpleado(editingId, {
                 nombre: form.nombre,
                 apellido: form.apellido,
                 cedula: form.cedula,
@@ -178,8 +268,11 @@ export function EmpleadosPage() {
                 puestoId: form.puestoId,
             });
 
-            const lista = await getEmpleados();
-            setEmpleados(lista);
+            setEmpleados((actuales) =>
+                actuales.map((e) =>
+                    e.id === empleadoActualizado.id ? empleadoActualizado : e
+                )
+            );
 
             setOpen(false);
             setEditingId(null);
@@ -187,42 +280,64 @@ export function EmpleadosPage() {
 
             setSnackbar({
                 open: true,
-                message: "Empleado actualizado.",
+                message: "Empleado actualizado correctamente.",
                 severity: "success"
             });
         } catch (error: any) {
-            console.error(error);
+            setSnackbar({
+                open: true,
+                message: error.response?.data?.message ?? "No se pudo actualizar el empleado.",
+                severity: "error"
+            });
         }
     }
 
     return (
         <Box>
-            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
-                <Box>
-                    <Typography variant="h4">Empleados</Typography>
-                    <Typography color="text.secondary">
-                        Gestión del personal registrado en la empresa.
-                    </Typography>
-                </Box>
-
-                <Button
-                    variant="contained"
-                    startIcon={<AddIcon />}
-                    onClick={() => {
-                        setEditingId(null);
-                        setForm(initialForm);
-                        setOpen(true);
-                    }}
-                >
-                    Nuevo empleado
-                </Button>
-            </Box>
+            <PageHeader
+                title="Empleados"
+                subtitle="GestiÃ³n del personal registrado."
+                action={
+                    puedeGestionarEmpleados ? (
+                        <Button
+                            variant="contained"
+                            startIcon={<AddIcon />}
+                            onClick={() => {
+                                setEditingId(null);
+                                setForm(initialForm);
+                                setOpen(true);
+                            }}
+                        >
+                            Nuevo empleado
+                        </Button>
+                    ) : undefined
+                }
+            />
 
             <EmpleadoToolbar
                 search={search}
                 estado={estadoFiltro}
+                departamentoFiltro={departamentoFiltro}
+                puestoFiltro={puestoFiltro}
+                departamentos={departamentos}
+                puestos={puestos}
+                salarioDesde={salarioDesde}
+                salarioHasta={salarioHasta}
                 onSearch={setSearch}
                 onEstado={setEstadoFiltro}
+                onDepartamento={setDepartamentoFiltro}
+                onPuesto={setPuestoFiltro}
+                onSalarioDesde={setSalarioDesde}
+                onSalarioHasta={setSalarioHasta}
+                canCreate={puedeGestionarEmpleados}
+                onClearFilters={() => {
+                    setSearch("");
+                    setEstadoFiltro("Activo");
+                    setDepartamentoFiltro("Todos");
+                    setPuestoFiltro("Todos");
+                    setSalarioDesde("");
+                    setSalarioHasta("");
+                }}
                 onNuevo={() => {
                     setEditingId(null);
                     setForm(initialForm);
@@ -230,12 +345,35 @@ export function EmpleadosPage() {
                 }}
             />
 
+            {puedeGestionarEmpleados && selected.length > 0 && (
+                <Box sx={{ mb: 2, display: "flex", alignItems: "center", gap: 2 }}>
+                    <Typography>{selected.length} seleccionados</Typography>
+
+                    <Button
+                        color="error"
+                        variant="contained"
+                        onClick={desactivarSeleccionados}
+                    >
+                        Desactivar seleccionados
+                    </Button>
+                </Box>
+            )}
+
             <EmpleadoTable
                 empleados={empleadosFiltrados}
                 departamentos={departamentos}
                 puestos={puestos}
+                selected={selected}
                 onEdit={handleEdit}
                 onDelete={handleDeleteEmpleado}
+                onView={setEmpleadoDetalle}
+                onToggle={toggleEmpleado}
+                onToggleAll={toggleTodos}
+                canManage={puedeGestionarEmpleados}
+                configSistema={{
+                    moneda: configuracion.moneda,
+                    idioma: configuracion.idioma,
+                }}
             />
 
             <EmpleadoDialog
@@ -253,6 +391,31 @@ export function EmpleadosPage() {
                 onSubmit={editingId ? handleUpdateEmpleado : handleCreateEmpleado}
             />
 
+            {/* ConfirmDialog */}
+            <ConfirmDialog
+                open={Boolean(empleadoAEliminar)}
+                title="Desactivar empleado"
+                message={`Â¿Seguro que deseas desactivar a ${empleadoAEliminar?.nombre} ${empleadoAEliminar?.apellido}?`}
+                confirmText="Desactivar"
+                onClose={() => setEmpleadoAEliminar(null)}
+                onConfirm={confirmarEliminarEmpleado}
+            />
+
+            {/* EmpleadoDetailsDialog */}
+            <EmpleadoDetailsDialog
+                canEdit={puedeGestionarEmpleados}
+                onEdit={handleEdit}
+                open={Boolean(empleadoDetalle)}
+                empleado={empleadoDetalle}
+                departamentos={departamentos}
+                puestos={puestos}
+                onClose={() => setEmpleadoDetalle(null)}
+                configSistema={{
+                    moneda: configuracion.moneda,
+                    idioma: configuracion.idioma,
+                }}
+            />
+
             {/* Snackbar */}
             <AppSnackbar
                 open={snackbar.open}
@@ -265,3 +428,4 @@ export function EmpleadosPage() {
         </Box>
     );
 }
+

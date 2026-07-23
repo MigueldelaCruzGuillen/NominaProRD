@@ -35,14 +35,14 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ICurrentUserService, CurrentUserService>();
 
         services.AddCors(options =>
-{
-    options.AddPolicy("Frontend", policy =>
-    {
-        policy.WithOrigins("http://localhost:5173")
-              .AllowAnyHeader()
-              .AllowAnyMethod();
-    });
-});
+        {
+            options.AddPolicy("Frontend", policy =>
+            {
+                policy.WithOrigins("http://localhost:5173")
+                      .AllowAnyHeader()
+                      .AllowAnyMethod();
+            });
+        });
 
         services.AddOpenApi();
 
@@ -63,6 +63,22 @@ public static class ServiceCollectionExtensions
                     ClockSkew = TimeSpan.Zero
                 };
             });
+
+        // Agregar políticas de autorización
+        services.AddAuthorization(options =>
+        {
+            options.AddPolicy("SoloAdmin", policy =>
+                policy.RequireRole("Administrador"));
+
+            options.AddPolicy("RRHH", policy =>
+                policy.RequireRole("Administrador", "RRHH"));
+
+            options.AddPolicy("Contabilidad", policy =>
+                policy.RequireRole("Administrador", "Contabilidad"));
+
+            options.AddPolicy("SoloLectura", policy =>
+                policy.RequireRole("Administrador", "RRHH", "Contabilidad", "Consulta"));
+        });
 
         services.AddAutoMapper(cfg =>
         {
@@ -91,6 +107,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<INominaCalculatorService, NominaCalculatorService>();
         services.AddScoped<INominaService, NominaService>();
         services.AddScoped<IAsistenciaRepository, AsistenciaRepository>();
+        services.AddScoped<IAuditoriaRepository, AuditoriaRepository>();
+        services.AddScoped<IAuditoriaService, AuditoriaService>();
+        services.AddScoped<IUsuarioService, UsuarioService>();
 
         return services;
     }

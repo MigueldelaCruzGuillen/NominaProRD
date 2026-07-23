@@ -10,8 +10,7 @@ public class Usuario : BaseEntity
 
     public string PasswordHash { get; set; } = string.Empty;
 
-    public string Rol { get; set; } = "Empleado";
-
+    public string Rol { get; set; } = "Consulta";
     public Guid EmpresaId { get; set; }
 
     public Empresa Empresa { get; set; } = null!;

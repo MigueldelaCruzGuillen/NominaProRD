@@ -4,7 +4,7 @@ using NominaPro.Application.Interfaces;
 
 namespace NominaPro.Application.Features.Departamentos.Queries;
 
-public class GetDepartamentosQueryHandler 
+public class GetDepartamentosQueryHandler
     : IRequestHandler<GetDepartamentosQuery, List<DepartamentoDto>>
 {
     private readonly IDepartamentoRepository _repository;
@@ -31,7 +31,9 @@ public class GetDepartamentosQueryHandler
                 Id = d.Id,
                 Nombre = d.Nombre,
                 Descripcion = d.Descripcion,
-                EmpresaId = d.EmpresaId
+                EmpresaId = d.EmpresaId,
+                Activo = d.Activo,
+                TotalEmpleados = d.Empleados.Count(e => e.Activo)
             })
             .ToList();
     }

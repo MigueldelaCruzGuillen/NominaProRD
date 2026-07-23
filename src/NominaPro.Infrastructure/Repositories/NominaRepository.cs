@@ -27,6 +27,7 @@ public class NominaRepository : INominaRepository
         return await _context.Nominas
             .Include(n => n.Empresa)
             .Include(n => n.PeriodoNomina)
+            .Include(n => n.PagadaPorUsuario)
             .Include(n => n.Detalles)
                 .ThenInclude(d => d.Empleado)
                     .ThenInclude(e => e.Departamento)
@@ -42,6 +43,14 @@ public class NominaRepository : INominaRepository
         await _context.SaveChangesAsync();
         return nomina;
     }
+
+    public async Task<List<Nomina>> GetAllAsync(Guid empresaId)
+{
+    return await _context.Nominas
+        .Where(n => n.EmpresaId == empresaId)
+        .OrderByDescending(n => n.FechaGeneracion)
+        .ToListAsync();
+}
 
     public async Task<bool> ExisteNominaPorPeriodoAsync(Guid empresaId, Guid periodoNominaId)
     {

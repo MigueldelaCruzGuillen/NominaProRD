@@ -9,5 +9,6 @@ public interface INominaRepository
     Task<bool> ExisteNominaPorPeriodoAsync(Guid empresaId, Guid periodoNominaId);
     Task<Nomina> CreateAsync(Nomina nomina);
     Task UpdateAsync(Nomina nomina);
+    Task<List<Nomina>> GetAllAsync(Guid empresaId);
 
 }

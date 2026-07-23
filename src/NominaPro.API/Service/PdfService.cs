@@ -9,6 +9,22 @@ public class PdfService
 {
     public byte[] GenerarReciboNomina(NominaDto nomina, NominaDetalleDto detalle)
     {
+        var empresaNombre = string.IsNullOrWhiteSpace(nomina.EmpresaNombre)
+            ? "NominaPro RD"
+            : nomina.EmpresaNombre;
+
+        var empresaRnc = string.IsNullOrWhiteSpace(nomina.EmpresaRnc)
+            ? "N/A"
+            : nomina.EmpresaRnc;
+
+        var empresaDireccion = string.IsNullOrWhiteSpace(nomina.EmpresaDireccion)
+            ? ""
+            : nomina.EmpresaDireccion;
+
+        var empresaTelefono = string.IsNullOrWhiteSpace(nomina.EmpresaTelefono)
+            ? ""
+            : nomina.EmpresaTelefono;
+
         QuestPDF.Settings.License = LicenseType.Community;
 
         return Document.Create(container =>
@@ -18,16 +34,45 @@ public class PdfService
                 page.Margin(40);
                 page.Size(PageSizes.A4);
 
-                page.Header().Text("NOMINAPRO RD - RECIBO DE PAGO")
-                    .FontSize(18)
-                    .Bold()
-                    .AlignCenter();
+                // ✅ UN SOLO HEADER con toda la información
+                page.Header().Column(header =>
+                {
+                    header.Item().Text(empresaNombre)
+                        .FontSize(18)
+                        .Bold()
+                        .AlignCenter();
 
+                    if (!string.IsNullOrWhiteSpace(empresaDireccion))
+                    {
+                        header.Item().Text(empresaDireccion)
+                            .FontSize(10)
+                            .AlignCenter();
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(empresaTelefono))
+                    {
+                        header.Item().Text($"Tel: {empresaTelefono}")
+                            .FontSize(10)
+                            .AlignCenter();
+                    }
+
+                    header.Item().Text($"RNC: {empresaRnc}")
+                        .FontSize(10)
+                        .AlignCenter();
+
+                    header.Item().PaddingTop(10)
+                        .Text("RECIBO DE PAGO")
+                        .FontSize(14)
+                        .Bold()
+                        .AlignCenter();
+                });
+
+                // ✅ CONTENIDO PRINCIPAL
                 page.Content().Column(col =>
                 {
                     col.Spacing(10);
 
-                    col.Item().Text($"Nómina ID: {nomina.Id}");
+                    col.Item().PaddingTop(10).Text($"Nómina ID: {nomina.Id}");
                     col.Item().Text($"Empleado: {detalle.EmpleadoNombre}");
                     col.Item().Text($"Departamento: {detalle.Departamento}");
                     col.Item().Text($"Puesto: {detalle.Puesto}");
@@ -49,7 +94,14 @@ public class PdfService
                         .Bold();
                 });
 
-                page.Footer().AlignCenter().Text("Documento generado por NominaPro RD");
+                // ✅ OPCIONAL: FOOTER CON NÚMERO DE PÁGINA
+                page.Footer().Text(text =>
+                {
+                    text.Span("Página ");
+                    text.CurrentPageNumber();
+                    text.Span(" de ");
+                    text.TotalPages();
+                });
             });
         }).GeneratePdf();
     }

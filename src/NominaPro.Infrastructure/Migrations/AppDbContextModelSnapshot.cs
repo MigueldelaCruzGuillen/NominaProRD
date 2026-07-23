@@ -61,9 +61,141 @@ namespace NominaPro.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("EmpleadoId");
+                    b.HasIndex("EmpleadoId", "Fecha")
+                        .IsUnique();
 
                     b.ToTable("Asistencias");
+                });
+
+            modelBuilder.Entity("NominaPro.Domain.Entities.Auditoria", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Accion")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)");
+
+                    b.Property<bool>("Activo")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Descripcion")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<DateTime>("Fecha")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("FechaActualizacion")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("FechaCreacion")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Ip")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("Modulo")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)");
+
+                    b.Property<string>("Usuario")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)");
+
+                    b.Property<Guid>("UsuarioId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Auditorias");
+                });
+
+            modelBuilder.Entity("NominaPro.Domain.Entities.ConfiguracionNomina", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("Activo")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("AplicarIsr")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("Decimales")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("DiaPago")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("EmpresaId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("FechaActualizacion")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("FechaCreacion")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<decimal>("PorcentajeAfp")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("PorcentajeSfs")
+                        .HasColumnType("numeric");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EmpresaId");
+
+                    b.ToTable("ConfiguracionesNomina");
+                });
+
+            modelBuilder.Entity("NominaPro.Domain.Entities.ConfiguracionSistema", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("Activo")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid>("EmpresaId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("FechaActualizacion")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("FechaCreacion")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("FormatoFecha")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Idioma")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Moneda")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ZonaHoraria")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EmpresaId");
+
+                    b.ToTable("ConfiguracionesSistema");
                 });
 
             modelBuilder.Entity("NominaPro.Domain.Entities.Departamento", b =>
@@ -243,6 +375,12 @@ namespace NominaPro.Infrastructure.Migrations
                     b.Property<DateTime>("FechaGeneracion")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<DateTime?>("FechaPago")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("PagadaPorUsuarioId")
+                        .HasColumnType("uuid");
+
                     b.Property<Guid>("PeriodoNominaId")
                         .HasColumnType("uuid");
 
@@ -258,6 +396,8 @@ namespace NominaPro.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("EmpresaId");
+
+                    b.HasIndex("PagadaPorUsuarioId");
 
                     b.HasIndex("PeriodoNominaId");
 
@@ -279,6 +419,9 @@ namespace NominaPro.Infrastructure.Migrations
                     b.Property<decimal>("Bonificaciones")
                         .HasColumnType("numeric");
 
+                    b.Property<int>("DecimalesAplicados")
+                        .HasColumnType("integer");
+
                     b.Property<Guid>("EmpleadoId")
                         .HasColumnType("uuid");
 
@@ -294,6 +437,9 @@ namespace NominaPro.Infrastructure.Migrations
                     b.Property<decimal>("Isr")
                         .HasColumnType("numeric");
 
+                    b.Property<bool>("IsrAplicado")
+                        .HasColumnType("boolean");
+
                     b.Property<decimal>("NetoPagar")
                         .HasColumnType("numeric");
 
@@ -304,6 +450,12 @@ namespace NominaPro.Infrastructure.Migrations
                         .HasColumnType("numeric");
 
                     b.Property<decimal>("OtrosIngresos")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("PorcentajeAfpAplicado")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("PorcentajeSfsAplicado")
                         .HasColumnType("numeric");
 
                     b.Property<decimal>("SalarioBase")
@@ -325,6 +477,54 @@ namespace NominaPro.Infrastructure.Migrations
                     b.HasIndex("NominaId");
 
                     b.ToTable("NominaDetalles");
+                });
+
+            modelBuilder.Entity("NominaPro.Domain.Entities.Notificacion", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("Activo")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid>("EmpresaId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("Fecha")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("FechaActualizacion")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("FechaCreacion")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("Leida")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Mensaje")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Tipo")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Titulo")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("UsuarioId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EmpresaId");
+
+                    b.HasIndex("UsuarioId");
+
+                    b.ToTable("Notificaciones");
                 });
 
             modelBuilder.Entity("NominaPro.Domain.Entities.PeriodoNomina", b =>
@@ -379,6 +579,9 @@ namespace NominaPro.Infrastructure.Migrations
                     b.Property<bool>("Activo")
                         .HasColumnType("boolean");
 
+                    b.Property<Guid>("DepartamentoId")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("Descripcion")
                         .IsRequired()
                         .HasColumnType("text");
@@ -397,6 +600,8 @@ namespace NominaPro.Infrastructure.Migrations
                         .HasColumnType("text");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("DepartamentoId");
 
                     b.HasIndex("EmpresaId");
 
@@ -455,6 +660,28 @@ namespace NominaPro.Infrastructure.Migrations
                     b.Navigation("Empleado");
                 });
 
+            modelBuilder.Entity("NominaPro.Domain.Entities.ConfiguracionNomina", b =>
+                {
+                    b.HasOne("NominaPro.Domain.Entities.Empresa", "Empresa")
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Empresa");
+                });
+
+            modelBuilder.Entity("NominaPro.Domain.Entities.ConfiguracionSistema", b =>
+                {
+                    b.HasOne("NominaPro.Domain.Entities.Empresa", "Empresa")
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Empresa");
+                });
+
             modelBuilder.Entity("NominaPro.Domain.Entities.Departamento", b =>
                 {
                     b.HasOne("NominaPro.Domain.Entities.Empresa", "Empresa")
@@ -501,6 +728,10 @@ namespace NominaPro.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("NominaPro.Domain.Entities.Usuario", "PagadaPorUsuario")
+                        .WithMany()
+                        .HasForeignKey("PagadaPorUsuarioId");
+
                     b.HasOne("NominaPro.Domain.Entities.PeriodoNomina", "PeriodoNomina")
                         .WithMany()
                         .HasForeignKey("PeriodoNominaId")
@@ -508,6 +739,8 @@ namespace NominaPro.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Empresa");
+
+                    b.Navigation("PagadaPorUsuario");
 
                     b.Navigation("PeriodoNomina");
                 });
@@ -531,6 +764,23 @@ namespace NominaPro.Infrastructure.Migrations
                     b.Navigation("Nomina");
                 });
 
+            modelBuilder.Entity("NominaPro.Domain.Entities.Notificacion", b =>
+                {
+                    b.HasOne("NominaPro.Domain.Entities.Empresa", "Empresa")
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("NominaPro.Domain.Entities.Usuario", "Usuario")
+                        .WithMany()
+                        .HasForeignKey("UsuarioId");
+
+                    b.Navigation("Empresa");
+
+                    b.Navigation("Usuario");
+                });
+
             modelBuilder.Entity("NominaPro.Domain.Entities.PeriodoNomina", b =>
                 {
                     b.HasOne("NominaPro.Domain.Entities.Empresa", "Empresa")
@@ -544,11 +794,19 @@ namespace NominaPro.Infrastructure.Migrations
 
             modelBuilder.Entity("NominaPro.Domain.Entities.Puesto", b =>
                 {
+                    b.HasOne("NominaPro.Domain.Entities.Departamento", "Departamento")
+                        .WithMany("Puestos")
+                        .HasForeignKey("DepartamentoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("NominaPro.Domain.Entities.Empresa", "Empresa")
                         .WithMany("Puestos")
                         .HasForeignKey("EmpresaId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Departamento");
 
                     b.Navigation("Empresa");
                 });
@@ -567,6 +825,8 @@ namespace NominaPro.Infrastructure.Migrations
             modelBuilder.Entity("NominaPro.Domain.Entities.Departamento", b =>
                 {
                     b.Navigation("Empleados");
+
+                    b.Navigation("Puestos");
                 });
 
             modelBuilder.Entity("NominaPro.Domain.Entities.Empleado", b =>

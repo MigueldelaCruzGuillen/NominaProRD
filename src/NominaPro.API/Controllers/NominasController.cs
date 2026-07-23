@@ -13,15 +13,19 @@ public class NominasController : ControllerBase
 {
     private readonly INominaService _service;
     private readonly PdfService _pdfService;
+    private readonly ICurrentUserService _currentUser;
 
     public NominasController(
         INominaService service,
-        PdfService pdfService)
+        PdfService pdfService,
+        ICurrentUserService currentUser)
     {
         _service = service;
         _pdfService = pdfService;
+        _currentUser = currentUser;
     }
 
+    [Authorize(Policy = "Contabilidad")]
     [HttpPost("generar")]
     public async Task<IActionResult> Generar(GenerarNominaDto dto)
     {
@@ -50,12 +54,14 @@ public class NominasController : ControllerBase
         });
     }
 
+    [Authorize(Policy = "SoloLectura")]
     [HttpGet]
     public async Task<ActionResult<List<NominaResumenDto>>> GetAll()
     {
         return Ok(await _service.GetAllAsync());
     }
 
+    [Authorize(Policy = "SoloLectura")]
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<NominaDto>> GetById(Guid id)
     {
@@ -67,6 +73,7 @@ public class NominasController : ControllerBase
         return Ok(nomina);
     }
 
+    [Authorize(Policy = "Contabilidad")]
     [HttpPut("{id:guid}/pagar")]
     public async Task<IActionResult> MarcarComoPagada(Guid id)
     {
@@ -78,7 +85,10 @@ public class NominasController : ControllerBase
         if (nomina.Estado == "Pagada")
             return BadRequest(new { message = "La nómina ya está pagada." });
 
+        // Actualizar propiedades de pago
         nomina.Estado = "Pagada";
+        nomina.PagadaPorUsuarioId = _currentUser.UsuarioId;
+        nomina.FechaPago = DateTime.UtcNow;
 
         await _service.UpdateAsync(nomina);
 
@@ -90,6 +100,7 @@ public class NominasController : ControllerBase
         });
     }
 
+    [Authorize(Policy = "SoloLectura")]
     [HttpGet("{nominaId:guid}/recibo/{empleadoId:guid}")]
     public async Task<IActionResult> DescargarRecibo(
         Guid nominaId,

@@ -1,15 +1,14 @@
 import { useState } from "react";
 import { Box, Button, Card, CardContent, TextField, Typography } from "@mui/material";
-import { login } from "../../services/authService";
+import { login } from "../../services/authservice";
+import { useAuth } from "../../contexts/AuthContext";
 
-type Props = {
-  onLogin: () => void;
-};
-
-export function LoginPage({ onLogin }: Props) {
+export function LoginPage() {
   const [email, setEmail] = useState("miguel@test.com");
   const [password, setPassword] = useState("123456");
   const [loading, setLoading] = useState(false);
+  const { loginUser } = useAuth();
+  
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -17,9 +16,21 @@ export function LoginPage({ onLogin }: Props) {
 
     try {
       const data = await login({ email, password });
-      localStorage.setItem("token", data.token);
-      onLogin();
-    } catch {
+      
+     
+      
+      // Actualizar el contexto de autenticación
+      loginUser({
+        token: data.token,
+        usuarioId: data.usuarioId,
+        email: data.email,
+        rol: data.rol,
+        empresaId: data.empresaId,
+        nombre: data.nombre,
+      });
+      
+    } catch (error) {
+      console.error("Error de login:", error);
       alert("Credenciales inválidas o API apagada.");
     } finally {
       setLoading(false);
@@ -39,10 +50,28 @@ export function LoginPage({ onLogin }: Props) {
           </Typography>
 
           <form onSubmit={handleSubmit}>
-            <TextField fullWidth label="Correo" value={email} onChange={(e) => setEmail(e.target.value)} sx={{ mb: 2 }} />
-            <TextField fullWidth label="Contraseña" type="password" value={password} onChange={(e) => setPassword(e.target.value)} sx={{ mb: 3 }} />
+            <TextField 
+              fullWidth 
+              label="Correo" 
+              value={email} 
+              onChange={(e) => setEmail(e.target.value)} 
+              sx={{ mb: 2 }} 
+            />
+            <TextField 
+              fullWidth 
+              label="Contraseña" 
+              type="password" 
+              value={password} 
+              onChange={(e) => setPassword(e.target.value)} 
+              sx={{ mb: 3 }} 
+            />
 
-            <Button fullWidth type="submit" variant="contained" disabled={loading}>
+            <Button 
+              fullWidth 
+              type="submit" 
+              variant="contained" 
+              disabled={loading}
+            >
               {loading ? "Entrando..." : "Entrar"}
             </Button>
           </form>

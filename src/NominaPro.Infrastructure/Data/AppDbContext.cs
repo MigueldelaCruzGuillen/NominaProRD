@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using NominaPro.Domain.Entities;
+using NominaPro.Infrastructure.Configurations;
 
 namespace NominaPro.Infrastructure.Data;
 
@@ -19,10 +20,26 @@ public class AppDbContext : DbContext
     public DbSet<Nomina> Nominas => Set<Nomina>();
     public DbSet<NominaDetalle> NominaDetalles => Set<NominaDetalle>();
     public DbSet<Asistencia> Asistencias => Set<Asistencia>();
+    public DbSet<Auditoria> Auditorias => Set<Auditoria>();
+    public DbSet<Notificacion> Notificaciones => Set<Notificacion>();
+    public DbSet<ConfiguracionSistema> ConfiguracionesSistema =>
+    Set<ConfiguracionSistema>();
+    public DbSet<ConfiguracionNomina> ConfiguracionesNomina =>
+    Set<ConfiguracionNomina>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.ApplyConfiguration(new AuditoriaConfiguration());
         base.OnModelCreating(modelBuilder);
+
+        // ✅ Índice único para Asistencia (empleado + fecha)
+        modelBuilder.Entity<Asistencia>()
+            .HasIndex(a => new
+            {
+                a.EmpleadoId,
+                a.Fecha
+            })
+            .IsUnique();
 
         modelBuilder.Entity<Usuario>()
             .HasOne(u => u.Empresa)
@@ -89,10 +106,17 @@ public class AppDbContext : DbContext
             .WithMany(e => e.NominaDetalles)
             .HasForeignKey(d => d.EmpleadoId)
             .OnDelete(DeleteBehavior.Restrict);
+
         modelBuilder.Entity<Asistencia>()
             .HasOne(a => a.Empleado)
             .WithMany(e => e.Asistencias)
             .HasForeignKey(a => a.EmpleadoId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Puesto>()
+            .HasOne(p => p.Departamento)
+            .WithMany(d => d.Puestos)
+            .HasForeignKey(p => p.DepartamentoId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

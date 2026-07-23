@@ -4,11 +4,27 @@ using NominaPro.Application.Behaviors;
 using MediatR;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
+using NominaPro.Application.Interfaces;
+using NominaPro.Infrastructure.Repositories;
+using NominaPro.Infrastructure.Services;
+using NominaPro.Application.Interfaces;
+using NominaPro.Infrastructure.Services;
+using NominaPro.Application.Services;
 
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddNominaProServices(builder.Configuration);
+builder.Services.AddScoped<INotificacionService, NotificacionService>();
+builder.Services.AddScoped<IAsistenciaRepository,AsistenciaRepository>();
+builder.Services.AddScoped<IAsistenciaService,AsistenciaService>();
+builder.Services.AddScoped<INotificacionRepository, NotificacionRepository>();
+builder.Services.AddScoped<IConfiguracionSistemaRepository,ConfiguracionSistemaRepository>();
+builder.Services.AddScoped<IConfiguracionSistemaService,ConfiguracionSistemaService>();
+builder.Services.AddScoped<IConfiguracionSistemaService, ConfiguracionSistemaService>();
+builder.Services.AddScoped<IConfiguracionNominaRepository, ConfiguracionNominaRepository>();
+builder.Services.AddScoped<IConfiguracionNominaService, ConfiguracionNominaService>();
+builder.Services.AddScoped<IConfiguracionSistemaRepository, ConfiguracionSistemaRepository>();
 builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
 builder.Services.Configure<ApiBehaviorOptions>(options =>
 {

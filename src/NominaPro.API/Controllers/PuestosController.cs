@@ -41,4 +41,30 @@ public class PuestosController : ControllerBase
 
         return CreatedAtAction(nameof(GetById), new { id = puesto.Id }, puesto);
     }
+
+    [HttpPut("{id:guid}")]
+public async Task<ActionResult<PuestoDto>> Update(
+    Guid id,
+    UpdatePuestoDto dto)
+{
+    var puesto = await _service.UpdateAsync(id, dto);
+
+    return Ok(puesto);
+}
+
+[HttpPatch("{id:guid}/desactivar")]
+public async Task<IActionResult> Deactivate(Guid id)
+{
+    await _service.DeactivateAsync(id);
+
+    return NoContent();
+}
+
+[HttpPatch("{id:guid}/reactivar")]
+public async Task<IActionResult> Reactivate(Guid id)
+{
+    await _service.ReactivateAsync(id);
+
+    return NoContent();
+}
 }

@@ -43,4 +43,69 @@ public class DepartamentosController : ControllerBase
 
         return CreatedAtAction(nameof(GetById), new { id = departamento.Id }, departamento);
     }
+
+    [Authorize(Policy = "RRHH")]
+[HttpPut("{id:guid}")]
+public async Task<ActionResult<DepartamentoDto>> Update(
+    Guid id,
+    UpdateDepartamentoCommand command)
+{
+    command.Id = id;
+
+    var actualizado = await _mediator.Send(command);
+
+    if (actualizado is null)
+    {
+        return NotFound(new
+        {
+            message = "Departamento no encontrado."
+        });
+    }
+
+    return Ok(actualizado);
+}
+
+[Authorize(Policy = "RRHH")]
+[HttpPatch("{id:guid}/desactivar")]
+public async Task<IActionResult> Desactivar(Guid id)
+{
+    var resultado = await _mediator.Send(
+        new DeactivateDepartamentoCommand
+        {
+            Id = id
+        }
+    );
+
+    if (!resultado)
+    {
+        return NotFound(new
+        {
+            message = "Departamento no encontrado."
+        });
+    }
+
+    return NoContent();
+}
+
+[Authorize(Policy = "RRHH")]
+[HttpPatch("{id:guid}/reactivar")]
+public async Task<IActionResult> Reactivar(Guid id)
+{
+    var resultado = await _mediator.Send(
+        new ReactivateDepartamentoCommand
+        {
+            Id = id
+        }
+    );
+
+    if (!resultado)
+    {
+        return NotFound(new
+        {
+            message = "Departamento no encontrado."
+        });
+    }
+
+    return NoContent();
+}
 }

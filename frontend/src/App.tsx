@@ -1,15 +1,25 @@
+import { useEffect, useMemo, useState } from "react";
 import { ThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
+
 import { LoginPage } from "./features/auth/LoginPage";
 import { AppLayout } from "./layouts/AppLayout";
 import { getTheme } from "./theme/theme";
-import { useEffect, useMemo, useState } from "react";
+import { AuthProvider, useAuth } from "./contexts/AuthContext";
+import { SnackbarProvider } from "./contexts/SnackbarContext";
+import { ConfiguracionProvider } from "./contexts/ConfiguracionContext";
+
+function AppContent() {
+  const { isAuthenticated, logout } = useAuth();
+
+  if (!isAuthenticated) {
+    return <LoginPage />;
+  }
+
+  return <AppLayout onLogout={logout} onToggleTheme={() => {}} />;
+}
 
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(
-    Boolean(localStorage.getItem("token"))
-  );
-
   const [mode, setMode] = useState<"light" | "dark">(
     (localStorage.getItem("theme") as "light" | "dark") ?? "light"
   );
@@ -20,27 +30,39 @@ function App() {
     localStorage.setItem("theme", mode);
   }, [mode]);
 
-  function handleLogout() {
-    localStorage.removeItem("token");
-    setIsAuthenticated(false);
-  }
-
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
 
-      {!isAuthenticated ? (
-        <LoginPage onLogin={() => setIsAuthenticated(true)} />
-      ) : (
-        <AppLayout
-          onLogout={handleLogout}
-          onToggleTheme={() => {
-            console.log("Cambiando tema");
-            setMode((current) => (current === "light" ? "dark" : "light"));
-          }}
-        />
-      )}
+      <AuthProvider>
+        <ConfiguracionProvider>
+          <SnackbarProvider>
+            <AppContentWrapper setMode={setMode} />
+          </SnackbarProvider>
+        </ConfiguracionProvider>
+      </AuthProvider>
     </ThemeProvider>
+  );
+}
+
+function AppContentWrapper({
+  setMode,
+}: {
+  setMode: React.Dispatch<React.SetStateAction<"light" | "dark">>;
+}) {
+  const { isAuthenticated, logout } = useAuth();
+
+  if (!isAuthenticated) {
+    return <LoginPage />;
+  }
+
+  return (
+    <AppLayout
+      onLogout={logout}
+      onToggleTheme={() =>
+        setMode((current) => (current === "light" ? "dark" : "light"))
+      }
+    />
   );
 }
 

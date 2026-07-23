@@ -41,4 +41,32 @@ public class EmpresasController : ControllerBase
 
         return CreatedAtAction(nameof(GetById), new { id = empresa.Id }, empresa);
     }
+
+    [HttpPut("{id:guid}")]
+public async Task<ActionResult<EmpresaDto>> Update(Guid id, CreateEmpresaDto dto)
+{
+    var empresa = await _service.GetEntityByIdForUpdateAsync(id);
+
+    if (empresa is null)
+        return NotFound();
+
+    empresa.Nombre = dto.Nombre;
+    empresa.Rnc = dto.Rnc;
+    empresa.Direccion = dto.Direccion;
+    empresa.Telefono = dto.Telefono;
+    empresa.Correo = dto.Correo;
+
+    await _service.UpdateAsync(empresa);
+
+    return Ok(new EmpresaDto
+    {
+        Id = empresa.Id,
+        Nombre = empresa.Nombre,
+        Rnc = empresa.Rnc,
+        Direccion = empresa.Direccion,
+        Telefono = empresa.Telefono,
+        Correo = empresa.Correo,
+        Activa = empresa.Activa
+    });
+}
 }

@@ -5,7 +5,7 @@ using NominaPro.Domain.Entities;
 
 namespace NominaPro.Application.Features.Departamentos.Commands;
 
-public class CreateDepartamentoCommandHandler 
+public class CreateDepartamentoCommandHandler
     : IRequestHandler<CreateDepartamentoCommand, DepartamentoDto>
 {
     private readonly IDepartamentoRepository _repository;
@@ -25,8 +25,8 @@ public class CreateDepartamentoCommandHandler
     {
         var existe = await _repository.ExistsByNombreAsync(request.Nombre, _currentUser.EmpresaId);
 
-       if (existe)
-       throw new InvalidOperationException("Ya existe un departamento con ese nombre.");
+        if (existe)
+            throw new InvalidOperationException("Ya existe un departamento con ese nombre.");
         var departamento = new Departamento
         {
             Nombre = request.Nombre,
@@ -41,7 +41,9 @@ public class CreateDepartamentoCommandHandler
             Id = departamento.Id,
             Nombre = departamento.Nombre,
             Descripcion = departamento.Descripcion,
-            EmpresaId = departamento.EmpresaId
+            EmpresaId = departamento.EmpresaId,
+            Activo = departamento.Activo,
+            TotalEmpleados = 0
         };
     }
 }

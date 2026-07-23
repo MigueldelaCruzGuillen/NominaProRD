@@ -10,4 +10,5 @@ public interface IEmpleadoService
     Task<EmpleadoDto> CreateAsync(CreateEmpleadoDto dto);
     Task<Empleado?> GetEntityByIdForUpdateAsync(Guid id);
     Task DeleteAsync(Empleado empleado);
+    Task<EmpleadoDto?> UpdateAsync(Guid id, CreateEmpleadoDto dto);
 }

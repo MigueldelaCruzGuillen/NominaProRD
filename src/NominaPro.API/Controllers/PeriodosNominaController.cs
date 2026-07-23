@@ -13,13 +13,16 @@ public class PeriodosNominaController : ControllerBase
 {
     private readonly IRepository<PeriodoNomina> _repository;
     private readonly ICurrentUserService _currentUser;
+    private readonly IAuditoriaService _auditoriaService;
 
     public PeriodosNominaController(
         IRepository<PeriodoNomina> repository,
-        ICurrentUserService currentUser)
+        ICurrentUserService currentUser,
+        IAuditoriaService auditoriaService)
     {
         _repository = repository;
         _currentUser = currentUser;
+        _auditoriaService = auditoriaService;
     }
 
     [HttpPost]
@@ -59,6 +62,14 @@ public class PeriodosNominaController : ControllerBase
 
         await _repository.CreateAsync(periodo);
 
+        await _auditoriaService.RegistrarAsync(
+            _currentUser.UsuarioId,
+            _currentUser.Email,
+            "Períodos",
+            "Crear",
+            $"Creó el período {periodo.Nombre}"
+        );
+
         return Ok(new PeriodoNominaDto
         {
             Id = periodo.Id,
@@ -90,5 +101,45 @@ public class PeriodosNominaController : ControllerBase
             .ToList();
 
         return Ok(result);
+    }
+
+    [Authorize(Policy = "Contabilidad")]
+    [HttpPut("{id:guid}/cerrar")]
+    public async Task<ActionResult<PeriodoNominaDto>> Cerrar(Guid id)
+    {
+        var periodos = await _repository.GetAllAsync();
+
+        var periodo = periodos.FirstOrDefault(p =>
+            p.Id == id &&
+            p.EmpresaId == _currentUser.EmpresaId
+        );
+
+        if (periodo is null)
+            return NotFound(new { message = "Período no encontrado." });
+
+        if (periodo.Estado == "Cerrado")
+            return BadRequest(new { message = "El período ya está cerrado." });
+
+        periodo.Estado = "Cerrado";
+
+        await _repository.UpdateAsync(periodo);
+
+        await _auditoriaService.RegistrarAsync(
+            _currentUser.UsuarioId,
+            _currentUser.Email,
+            "Períodos",
+            "Cerrar",
+            $"Cerró el período {periodo.Nombre}"
+        );
+
+        return Ok(new PeriodoNominaDto
+        {
+            Id = periodo.Id,
+            Nombre = periodo.Nombre,
+            FechaInicio = periodo.FechaInicio,
+            FechaFin = periodo.FechaFin,
+            Tipo = periodo.Tipo,
+            Estado = periodo.Estado
+        });
     }
 }

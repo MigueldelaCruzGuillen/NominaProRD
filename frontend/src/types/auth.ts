@@ -5,7 +5,9 @@ export type LoginRequest = {
 
 export type AuthResponse = {
   token: string;
+  usuarioId: string;
   email: string;
   rol: string;
   empresaId: string;
+  nombre: string;
 };

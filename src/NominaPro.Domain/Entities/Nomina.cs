@@ -19,4 +19,7 @@ public class Nomina : BaseEntity
     public string Estado { get; set; } = "Generada";
 
     public ICollection<NominaDetalle> Detalles { get; set; } = new List<NominaDetalle>();
+    public Guid? PagadaPorUsuarioId { get; set; }
+    public Usuario? PagadaPorUsuario { get; set; }
+    public DateTime? FechaPago { get; set; }
 }
